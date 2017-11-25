@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+{% block title %} Register Page {% endblock %}
+{% block body %}
+    <div class="row text-center">
+        <div class="col-md-12 top-form">
+            <span class="text-form">
+                Panel rejestracji
+            </span>
+        </div>
+    </div>
+    <div class="row text-center">
+        <div class="col-md-10 col-md-offset-1">
+            <div class="form-box">
+                {{ form_start(form, {'attr': {'id': 'registerform'}}) }}
+                <div class="form-group">
+                    {{ form_widget(form.username, { 'attr': {'class': 'input-class', 'placeholder':'Nazwa konta'} }) }}
+                    {% for errorItem in form.username.vars.errors %}
+                        <span class="help-inline">{{ errorItem.message }}</span>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    {{ form_widget(form.plainPassword.first, { 'attr': {'class': 'input-class', 'placeholder':'Hasło'} }) }}
+                    {% for errorItem in form.plainPassword.first.vars.errors %}
+                        <span class="help-inline">{{ errorItem.message }}</span>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    {{ form_widget(form.plainPassword.second, { 'attr': {'class': 'input-class', 'placeholder':'Powtórz hasło'} }) }}
+                    {% for errorItem in form.plainPassword.second.vars.errors %}
+                        <span class="help-inline">{{ errorItem.message }}</span>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    {{ form_widget(form.email, { 'attr': {'class': 'input-class', 'placeholder':'Adres e-mail'} }) }}
+                    {% for errorItem in form.email.vars.errors %}
+                        <span class="help-inline">{{ errorItem.message }}</span>
+                    {% endfor %}
+                </div>
+                {{ form_rest(form) }}
+                <div class="text-center">
+                    <button type="submit" class="btn-h btn-blue">Załóż konto</button>
+                </div>
+                {{ form_errors(form) }}
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
