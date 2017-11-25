@@ -52,7 +52,7 @@ security:
         - { path: ^/api/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
 
-        - { path: ^/rest/, roles: IS_AUTHENTICATED_FULLY}
+#        - { path: ^/rest/, roles: IS_AUTHENTICATED_FULLY}
         - { path: ^/login, allow_if: "is_anonymous() and !is_authenticated()" }
         - { path: ^/register, allow_if: "is_anonymous() and !is_authenticated()" }
         - { path: ^/, roles: IS_AUTHENTICATED_ANONYMOUSLY}
