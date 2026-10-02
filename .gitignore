@@ -1,0 +1,12 @@
+# Kopia starej strony (30 MB) — źródło zdjęć, nie musi być w repo
+old/
+# Folder budowany automatycznie (lokalnie dla Netlify, w GitHub Actions jako _site)
+dist/
+_site/
+# Surowy plik WAV (duży) — w repo są gotowe MP4
+assets/video/soundtrack.wav
+# Śmieci Pythona / edytorów
+__pycache__/
+*.pyc
+.idea/
+.DS_Store
