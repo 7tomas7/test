@@ -1,10 +1,11 @@
 """
 Podkłada prawdziwą muzykę (plik MP3) pod gotowy film — bez ponownego renderowania obrazu.
 
-Muzyka: Kevin MacLeod (incompetech.com), licencja CC BY 4.0.
-  -> wolno używać komercyjnie (także w reklamach), WARUNEK: podpis autora,
-     np. w opisie filmu na YouTube/Facebooku:
-     "Music: <tytuł> by Kevin MacLeod (incompetech.com), CC BY 4.0"
+Muzyka w scripts/music/ — wyłącznie nagrania w DOMENIE PUBLICZNEJ / CC0 z Wikimedia Commons:
+  -> za darmo, komercyjnie (także w reklamach), BEZ obowiązku podpisywania autora.
+  Domena publiczna wymaga DWÓCH rzeczy: kompozytor nie żyje od 70+ lat (prawa do utworu)
+  ORAZ samo nagranie jest wolne (Musopen = CC0, orkiestry wojskowe USA = praca rządu USA).
+  Źródła: zob. scripts/music/ZRODLA.txt
 
 Jak wybrano fragment utworu (offset):
   Skrypt liczy głośność muzyki co 0,25 s i szuka miejsca, gdzie muzyka "wybucha"
@@ -49,12 +50,17 @@ def find_offset(track, cut_at):
     return best_o / 4
 
 
-def mux(video, track, offset, out):
+def track_length(track):
+    raw = subprocess.run([mv.FFMPEG, "-loglevel", "error", "-i", str(track), "-ac", "1", "-ar", str(SR),
+                          "-f", "f32le", "-"], capture_output=True, check=True).stdout
+    return len(raw) / 4 / SR  # 4 bajty na próbkę (float32)
+
+
+def mux(video, track, offset, out, fade_out=2.5):
     _, total = mv.timeline()
-    fade_out = 2.5
     af = ",".join([
         "afade=t=in:d=0.3",                                        # łagodny start (bez "pyknięcia")
-        f"afade=t=out:st={total - fade_out:.2f}:d={fade_out}",     # wyciszenie na końcu filmu
+        *([f"afade=t=out:st={total - fade_out:.2f}:d={fade_out}"] if fade_out else []),  # wyciszenie na końcu
         "loudnorm=I=-14:TP=-1:LRA=11",                             # standard głośności YouTube/IG/FB
     ])
     subprocess.run([
@@ -71,12 +77,18 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("track")
     ap.add_argument("--offset", type=float, help="sekunda utworu, od której startuje muzyka (domyślnie: automatycznie)")
+    ap.add_argument("--align-end", action="store_true",
+                    help="koniec utworu = koniec filmu (dla utworów z wielkim finałem, np. Grieg)")
     ap.add_argument("--out-dir", type=Path, help="zapisz kopie tutaj zamiast podmieniać filmy w assets/video")
     a = ap.parse_args()
 
     starts, _ = mv.timeline()
     first_cut = next(s for s, sc in zip(starts, mv.SCENES) if sc["type"] == "product")
-    offset = a.offset if a.offset is not None else find_offset(a.track, first_cut)
+    _, total = mv.timeline()
+    if a.align_end:
+        offset = track_length(a.track) - total  # ostatni akord utworu wypada na ostatniej klatce
+    else:
+        offset = a.offset if a.offset is not None else find_offset(a.track, first_cut)
     print(f"{Path(a.track).name}: start od {offset:.2f} s utworu")
 
     for name in ("promo.mp4", "promo-pion.mp4"):
@@ -86,7 +98,7 @@ if __name__ == "__main__":
             out = a.out_dir / f"{Path(a.track).stem}-{name}"
         else:
             out = src.with_suffix(".tmp.mp4")
-        mux(src, a.track, offset, out)
+        mux(src, a.track, offset, out, fade_out=0.4 if a.align_end else 2.5)
         if not a.out_dir:
             out.replace(src)
         print(f"  -> {out if a.out_dir else src}")

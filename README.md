@@ -48,9 +48,7 @@ Wgraj na serwer wszystko **oprócz** `old/` i `scripts/`.
 
 ## Do zrobienia przed startem
 
-- Muzyka w filmie: „Five Armies” — Kevin MacLeod (incompetech.com), CC BY 4.0.
-  Przy publikacji filmu na YouTube/FB/IG wpisz w opisie:
-  `Music: "Five Armies" by Kevin MacLeod (incompetech.com), licensed under CC BY 4.0`
-  Zmiana muzyki: `python3 scripts/add_music.py scripts/music/<utwór>.mp3`
-  (po ponownym renderze obrazu przez make_video.py trzeba ją podłożyć jeszcze raz).
+- Muzyka w filmie: Verdi, „Chór kowali” (Anvil Chorus), nagranie Musopen — CC0, **bez obowiązku podpisu**.
+  Inne gotowe utwory (też bez podpisu) i źródła: `scripts/music/ZRODLA.txt`.
+  Zmiana muzyki: `python3 scripts/add_music.py scripts/music/<utwór>.mp3` (Grieg: dodaj `--align-end`).
 - Zdjęcie `black-smith.jpg` ze starej strony to grafika (nie zdjęcie pracowni) — celowo pominięte.
