@@ -16,7 +16,8 @@ assets/fonts/              fonty hostowane lokalnie (RODO, szybkość)
 assets/video/              film promo 16:9 + 9:16 (Reels/TikTok) + plakaty
 scripts/optimize_images.py zdjęcia ze starej strony -> WebP + gallery.js
 scripts/make_video.py      generator filmu reklamowego (obraz)
-scripts/make_soundtrack.py syntezator muzyki do filmu
+scripts/add_music.py       podkłada muzykę (MP3) pod film, sam dobiera fragment
+scripts/make_soundtrack.py stary syntezator dźwięku (nieużywany)
 old/                       kopia starej strony (źródło zdjęć) — NIE wgrywać na serwer
 ```
 
@@ -47,6 +48,9 @@ Wgraj na serwer wszystko **oprócz** `old/` i `scripts/`.
 
 ## Do zrobienia przed startem
 
-- Muzyka w filmie jest syntetyczna (scripts/make_soundtrack.py — bez problemów z licencją).
-  Po zmianie scen w make_video.py: najpierw make_video.py, potem make_soundtrack.py.
+- Muzyka w filmie: „Five Armies” — Kevin MacLeod (incompetech.com), CC BY 4.0.
+  Przy publikacji filmu na YouTube/FB/IG wpisz w opisie:
+  `Music: "Five Armies" by Kevin MacLeod (incompetech.com), licensed under CC BY 4.0`
+  Zmiana muzyki: `python3 scripts/add_music.py scripts/music/<utwór>.mp3`
+  (po ponownym renderze obrazu przez make_video.py trzeba ją podłożyć jeszcze raz).
 - Zdjęcie `black-smith.jpg` ze starej strony to grafika (nie zdjęcie pracowni) — celowo pominięte.
