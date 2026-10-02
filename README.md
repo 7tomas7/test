@@ -48,7 +48,8 @@ Wgraj na serwer wszystko **oprócz** `old/` i `scripts/`.
 
 ## Do zrobienia przed startem
 
-- Muzyka w filmie: Verdi, „Chór kowali” (Anvil Chorus), nagranie Musopen — CC0, **bez obowiązku podpisu**.
-  Inne gotowe utwory (też bez podpisu) i źródła: `scripts/music/ZRODLA.txt`.
-  Zmiana muzyki: `python3 scripts/add_music.py scripts/music/<utwór>.mp3` (Grieg: dodaj `--align-end`).
+- Muzyka w filmie: „A Legend Will Rise (Orchestral)”, CodeManu (OpenGameArt) — CC0, instrumentalna, **bez obowiązku podpisu**.
+  Inne gotowe utwory (też CC0, bez wokalu) i źródła: `scripts/music/ZRODLA.txt`.
+  Zmiana muzyki: `python3 scripts/add_music.py scripts/music/<utwór>.mp3 --align-end`
+  (`--align-end` = koniec utworu na końcu filmu; bez niego skrypt sam dobierze mocne wejście).
 - Zdjęcie `black-smith.jpg` ze starej strony to grafika (nie zdjęcie pracowni) — celowo pominięte.

@@ -1,11 +1,9 @@
 """
 Podkłada prawdziwą muzykę (plik MP3) pod gotowy film — bez ponownego renderowania obrazu.
 
-Muzyka w scripts/music/ — wyłącznie nagrania w DOMENIE PUBLICZNEJ / CC0 z Wikimedia Commons:
+Muzyka w scripts/music/ — wyłącznie utwory na licencji CC0 (domena publiczna) z OpenGameArt.org:
   -> za darmo, komercyjnie (także w reklamach), BEZ obowiązku podpisywania autora.
-  Domena publiczna wymaga DWÓCH rzeczy: kompozytor nie żyje od 70+ lat (prawa do utworu)
-  ORAZ samo nagranie jest wolne (Musopen = CC0, orkiestry wojskowe USA = praca rządu USA).
-  Źródła: zob. scripts/music/ZRODLA.txt
+  Źródła i linki: scripts/music/ZRODLA.txt
 
 Jak wybrano fragment utworu (offset):
   Skrypt liczy głośność muzyki co 0,25 s i szuka miejsca, gdzie muzyka "wybucha"
@@ -51,9 +49,15 @@ def find_offset(track, cut_at):
 
 
 def track_length(track):
+    """Gdzie KOŃCZY SIĘ muzyka — ostatnia sekunda, która nie jest ciszą.
+    Wiele utworów ma na końcu kilka sekund ciszy/pogłosu; nie chcemy, żeby film kończył się na nich."""
     raw = subprocess.run([mv.FFMPEG, "-loglevel", "error", "-i", str(track), "-ac", "1", "-ar", str(SR),
                           "-f", "f32le", "-"], capture_output=True, check=True).stdout
-    return len(raw) / 4 / SR  # 4 bajty na próbkę (float32)
+    x = np.frombuffer(raw, np.float32)
+    hop = SR // 10
+    db = 20 * np.log10(np.array([np.sqrt((x[i:i + hop] ** 2).mean()) for i in range(0, len(x) - hop, hop)]) + 1e-9)
+    loud = np.where(db > db.max() - 24)[0]  # "głośne" = najwyżej 24 dB ciszej niż szczyt
+    return (loud[-1] + 1) * hop / SR
 
 
 def mux(video, track, offset, out, fade_out=2.5):
