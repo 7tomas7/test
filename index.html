@@ -23,6 +23,11 @@
   <!-- preload: najważniejsze zasoby "na start", żeby nagłówek nie mrugał innym fontem -->
   <link rel="preload" href="assets/fonts/cormorant-garamond-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <!-- Nagłówek "Żelazo, ogień i ręka mistrza" ma polskie znaki (Ż, ę) i kursywę — to OSOBNE pliki
+       fontów (latin-ext, italic). Bez preload przeglądarka odkrywa je dopiero po wczytaniu CSS. -->
+  <link rel="preload" href="assets/fonts/cormorant-garamond-latin-ext-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/cormorant-garamond-latin-wght-italic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/cormorant-garamond-latin-ext-wght-italic.woff2" as="font" type="font/woff2" crossorigin>
   <!-- imagesrcset: telefon pobierze wersję 1100 px, duży ekran 2400 px — przeglądarka wybiera sama -->
   <link rel="preload" as="image" imagesrcset="assets/img/stock/mlot-zar-m.webp 1100w, assets/img/stock/mlot-zar.webp 2400w" imagesizes="100vw">
 
@@ -45,8 +50,8 @@
   <!-- ===================== NAWIGACJA ===================== -->
   <header class="site-header" data-header>
     <div class="container site-header__inner">
-      <a href="#top" class="brand" aria-label="Kowalstwo Artystyczne Marek Mida — strona główna">
-        <img src="assets/img/monogram.png" alt="" width="400" height="168" class="brand__mark">
+      <a href="#top" class="brand">
+        <img src="assets/img/monogram.webp" alt="" width="256" height="108" class="brand__mark">
         <span class="brand__text">
           <span class="brand__name">Marek Mida</span>
           <span class="brand__sub">Kowalstwo artystyczne</span>
@@ -96,15 +101,15 @@
       <div class="hero__shade" aria-hidden="true"></div>
 
       <div class="container hero__content">
-        <p class="eyebrow reveal">Pracownia kowalstwa artystycznego · od 1997</p>
-        <h1 id="hero-title" class="hero__title reveal">
+        <p class="eyebrow">Pracownia kowalstwa artystycznego · od 1997</p>
+        <h1 id="hero-title" class="hero__title">
           Żelazo, ogień<br> i <em>ręka mistrza</em>
         </h1>
-        <p class="hero__lead reveal">
+        <p class="hero__lead">
           Ręcznie kute bramy, ogrodzenia, balustrady i metaloplastyka, które łączą
           tradycję sztuki kowalskiej ze współczesną technologią.
         </p>
-        <div class="hero__actions reveal">
+        <div class="hero__actions">
           <a href="#galeria" class="btn btn--ember">Zobacz realizacje</a>
           <a href="#kontakt" class="btn btn--ghost">Bezpłatna wycena</a>
         </div>
@@ -138,7 +143,7 @@
     <section class="section about" id="o-nas" aria-labelledby="about-title">
       <div class="container about__grid">
         <figure class="about__media reveal">
-          <img src="assets/img/ornament-mm.webp" alt="Kuty monogram MM — znak firmowy pracowni Marka Midy" loading="lazy" width="1239" height="697">
+          <img src="assets/img/ornament-mm-900.webp" srcset="assets/img/ornament-mm-900.webp 900w, assets/img/ornament-mm.webp 1239w" sizes="(min-width: 900px) 45vw, 100vw" alt="Kuty monogram MM — znak firmowy pracowni Marka Midy" loading="lazy" width="900" height="506">
           <figcaption class="about__badge">
             <strong>25+</strong>
             <span>lat w&nbsp;ogniu<br>i&nbsp;żelazie</span>

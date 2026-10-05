@@ -281,6 +281,16 @@ h3 { font-family: var(--ff-display); font-size: var(--fs-h3); font-weight: 600; 
 }
 .hero__sparks { z-index: 0; pointer-events: none; mix-blend-mode: screen; }
 .hero__content { position: relative; z-index: 1; }
+/* Wejście treści hero w CZYSTYM CSS (bez JS). Ważne dla wyniku Google (LCP = moment, gdy
+   pojawi się największy tekst/obraz): animacja startuje od razu, a nagłówek H1 nie jest
+   ukrywany przez opacity — tylko się przesuwa, więc przeglądarka "liczy" go jako widoczny od startu. */
+.hero__content > * { animation: hero-in 1s var(--ease-out) both; }
+.hero__content > .eyebrow { animation-delay: .1s; }
+.hero__content > .hero__lead { animation-delay: .35s; }
+.hero__content > .hero__actions { animation-delay: .5s; }
+.hero__content > .hero__title { animation-name: hero-rise; }
+@keyframes hero-in { from { opacity: 0; transform: translateY(24px); } }
+@keyframes hero-rise { from { transform: translateY(24px); } }
 .hero__title { font-size: var(--fs-hero); margin-bottom: 1.4rem; text-shadow: 0 4px 40px rgb(0 0 0 / .6); }
 /* gradientowe "ręka mistrza": cień pod literami, żeby nie zlewało się z ogniem */
 .hero__title em { filter: drop-shadow(0 2px 12px rgb(0 0 0 / .95)); }
@@ -467,6 +477,8 @@ h3 { font-family: var(--ff-display); font-size: var(--fs-h3); font-weight: 600; 
   scrollbar-width: none;
 }
 .row__track::-webkit-scrollbar { display: none; }
+/* Rezerwacja wysokości, zanim JS wstawi miniatury — strona nie "skacze" (CLS = 0) */
+.row__track { min-height: calc(clamp(210px, 52vw, 300px) + .4rem); }
 .row__track li { flex: none; scroll-snap-align: start; }
 .row__track button {
   display: block; position: relative; overflow: hidden; border-radius: 12px; background: var(--c-surface);
@@ -669,6 +681,7 @@ h3 { font-family: var(--ff-display); font-size: var(--fs-h3); font-weight: 600; 
 /* Stopka: linki do kategorii + adres */
 .site-footer__nav ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: .3rem 1.2rem; margin: .8rem 0; }
 .site-footer__nav a, .site-footer__copy a, .site-footer__address a { color: var(--c-text); }
+.site-footer__copy a, .site-footer__address a { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgb(239 230 216 / .4); }
 .site-footer__nav a:hover, .site-footer__copy a:hover, .site-footer__address a:hover { color: var(--c-ember-2); }
 .site-footer__address { font-style: normal; font-size: .85rem; }
 

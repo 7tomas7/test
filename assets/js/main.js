@@ -316,21 +316,30 @@ function initGallery(openLightbox) {
       </div>
       <ul class="row__track" role="list"></ul>`;
     const track = $(".row__track", row);
-    const frag = document.createDocumentFragment(); // jedna operacja na DOM zamiast setek = szybciej
-    items.forEach((it, i) => {
-      const li = document.createElement("li");
-      li.innerHTML = `
-        <button type="button" aria-label="Powiększ: ${cat.label}, zdjęcie ${i + 1} z ${items.length}">
-          <img src="${BASE}thumb/${it.f}" width="${it.w}" height="${it.h}" alt="${cat.label} — realizacja Kowalstwa Artystycznego Marek Mida" loading="lazy" decoding="async">
-        </button>`;
-      const img = $("img", li);
-      // Płynne pojawienie się po załadowaniu (zamiast "wyskakiwania" obrazka)
-      if (img.complete) img.classList.add("is-loaded");
-      else img.addEventListener("load", () => img.classList.add("is-loaded"), { once: true });
-      $("button", li).addEventListener("click", () => openLightbox(items, i));
-      frag.append(li);
-    });
-    track.append(frag);
+    // Miniatury budujemy dopiero, gdy rząd zbliży się do ekranu (zapas 800 px).
+    // 468 przycisków od razu = ciężki DOM i wolniejszy start strony na telefonie.
+    const fill = () => {
+      const frag = document.createDocumentFragment(); // jedna operacja na DOM zamiast setek = szybciej
+      items.forEach((it, i) => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <button type="button" aria-label="Powiększ: ${cat.label}, zdjęcie ${i + 1} z ${items.length}">
+            <img src="${BASE}thumb/${it.f}" width="${it.w}" height="${it.h}" alt="${cat.label} — realizacja Kowalstwa Artystycznego Marek Mida" loading="lazy" decoding="async">
+          </button>`;
+        const img = $("img", li);
+        // Płynne pojawienie się po załadowaniu (zamiast "wyskakiwania" obrazka)
+        if (img.complete) img.classList.add("is-loaded");
+        else img.addEventListener("load", () => img.classList.add("is-loaded"), { once: true });
+        $("button", li).addEventListener("click", () => openLightbox(items, i));
+        frag.append(li);
+      });
+      track.append(frag);
+      requestAnimationFrame(updateBtns);
+    };
+    const near = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { near.disconnect(); fill(); }
+    }, { rootMargin: "800px 0px" });
+    near.observe(row);
 
     // Strzałki (desktop): przewiń o ~80% szerokości rzędu
     $$(".row__btn", row).forEach((b) => b.addEventListener("click", () => {
