@@ -356,6 +356,30 @@ h3 { font-family: var(--ff-display); font-size: var(--fs-h3); font-weight: 600; 
 @media (min-width: 640px) { .features__grid { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 1024px) { .features__grid { grid-template-columns: repeat(4, 1fr); } }
 
+/* ---------- Filozofia: bloki zdjęcie + tekst w zygzak ---------- */
+.story__item { display: grid; gap: clamp(1.5rem, 4vw, 4.5rem); align-items: center; margin-bottom: clamp(3rem, 7vw, 6rem); }
+.story__media { position: relative; }
+.story__media img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius-lg); filter: saturate(.9) contrast(1.05); }
+/* Ozdobna "żarząca się" ramka przesunięta za zdjęciem */
+.story__media::before {
+  content: ""; position: absolute; inset: 1.2rem -1.2rem -1.2rem 1.2rem; z-index: -1;
+  border: 1px solid rgb(232 121 47 / .45); border-radius: var(--radius-lg);
+}
+.story__no { display: block; font-family: var(--ff-display); font-style: italic; font-size: 3.2rem; line-height: 1; color: var(--c-ember-2); margin-bottom: .4rem; }
+.story__text h3 { font-size: clamp(1.8rem, 1.3rem + 1.8vw, 2.8rem); font-weight: 500; margin-bottom: 1rem; }
+.story__text p { color: var(--c-muted); font-size: 1.05rem; max-width: 52ch; }
+.story__motto {
+  text-align: center; font-family: var(--ff-display); font-size: clamp(2rem, 1.3rem + 3.5vw, 4rem);
+  font-weight: 500; line-height: 1.1; margin-top: clamp(1rem, 3vw, 2rem);
+}
+.story__motto em { font-style: italic; background: var(--grad-ember); -webkit-background-clip: text; background-clip: text; color: transparent; padding-right: .06em; }
+@media (min-width: 900px) {
+  .story__item { grid-template-columns: 1fr 1fr; }
+  /* co drugi blok: zdjęcie po prawej (order zmienia kolejność wizualnie, HTML zostaje logiczny) */
+  .story__item:nth-of-type(even) .story__media { order: 2; }
+  .story__item:nth-of-type(even) .story__media::before { inset: 1.2rem 1.2rem -1.2rem -1.2rem; }
+}
+
 /* ---------- Oferta: siatka bento ---------- */
 /* grid-auto-flow: dense — przeglądarka "dopycha" mniejsze kafelki w puste dziury siatki */
 .bento { display: grid; gap: .8rem; grid-template-columns: repeat(2, 1fr); grid-auto-rows: 180px; grid-auto-flow: dense; }

@@ -1,7 +1,7 @@
 """
 Podkłada prawdziwą muzykę (plik MP3) pod gotowy film — bez ponownego renderowania obrazu.
 
-Muzyka w scripts/music/ — wyłącznie utwory na licencji CC0 (domena publiczna) z OpenGameArt.org:
+Muzyka w scripts/music/ — utwory z Pixabay Music (Pixabay Content License):
   -> za darmo, komercyjnie (także w reklamach), BEZ obowiązku podpisywania autora.
   Źródła i linki: scripts/music/ZRODLA.txt
 

@@ -49,10 +49,9 @@ Wgraj na serwer wszystko **oprócz** `old/` i `scripts/`.
 
 ## Do zrobienia przed startem
 
-- Muzyka w filmie: „A Legend Will Rise (Orchestral)”, CodeManu (OpenGameArt) — CC0, instrumentalna, **bez obowiązku podpisu**.
-  Inne gotowe utwory (też CC0, bez wokalu) i źródła: `scripts/music/ZRODLA.txt`.
+- Muzyka w filmie: „Inspiring Cinematic Music”, Tunetank (Pixabay) — za darmo, **bez podpisu**.
+  Warianty i źródła: `scripts/music/ZRODLA.txt` (Pixabay: możliwe roszczenie Content ID na YouTube).
   Zmiana muzyki: `python3 scripts/add_music.py scripts/music/<utwór>.mp3 --align-end`
-  (`--align-end` = koniec utworu na końcu filmu; bez niego skrypt sam dobierze mocne wejście).
 - Zdjęcia ognia, młota, iskier (hero, „Ogień. Młot. Kowadło.”, kroki, baner) są z Unsplash —
   licencja Unsplash: za darmo, komercyjnie, bez podpisu. Źródła: `scripts/ZRODLA-zdjecia.txt`.
   To zdjęcia poglądowe (inne kuźnie) — najlepiej z czasem podmienić na zdjęcia z pracowni Marka.
