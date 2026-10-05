@@ -12,6 +12,7 @@ assets/js/main.js          interakcje: menu, slajdy, iskry, galeria, lightbox
 assets/data/gallery.js     lista 468 zdjęć — GENEROWANA skryptem
 assets/img/gallery/thumb   miniatury WebP (600 px)
 assets/img/gallery/full    duże zdjęcia WebP do podglądu
+assets/img/stock/          zdjęcia klimatu kuźni z Unsplash (2 rozmiary: -m = telefon)
 assets/fonts/              fonty hostowane lokalnie (RODO, szybkość)
 assets/video/              film promo 16:9 + 9:16 (Reels/TikTok) + plakaty
 scripts/optimize_images.py zdjęcia ze starej strony -> WebP + gallery.js
@@ -52,4 +53,7 @@ Wgraj na serwer wszystko **oprócz** `old/` i `scripts/`.
   Inne gotowe utwory (też CC0, bez wokalu) i źródła: `scripts/music/ZRODLA.txt`.
   Zmiana muzyki: `python3 scripts/add_music.py scripts/music/<utwór>.mp3 --align-end`
   (`--align-end` = koniec utworu na końcu filmu; bez niego skrypt sam dobierze mocne wejście).
+- Zdjęcia ognia, młota, iskier (hero, „Ogień. Młot. Kowadło.”, kroki, baner) są z Unsplash —
+  licencja Unsplash: za darmo, komercyjnie, bez podpisu. Źródła: `scripts/ZRODLA-zdjecia.txt`.
+  To zdjęcia poglądowe (inne kuźnie) — najlepiej z czasem podmienić na zdjęcia z pracowni Marka.
 - Zdjęcie `black-smith.jpg` ze starej strony to grafika (nie zdjęcie pracowni) — celowo pominięte.

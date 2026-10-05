@@ -21,7 +21,8 @@
   <!-- preload: najważniejsze zasoby "na start", żeby nagłówek nie mrugał innym fontem -->
   <link rel="preload" href="assets/fonts/cormorant-garamond-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="assets/img/hero-brama.webp" as="image">
+  <!-- imagesrcset: telefon pobierze wersję 1100 px, duży ekran 2400 px — przeglądarka wybiera sama -->
+  <link rel="preload" as="image" imagesrcset="assets/img/stock/mlot-zar-m.webp 1100w, assets/img/stock/mlot-zar.webp 2400w" imagesizes="100vw">
 
   <link rel="stylesheet" href="assets/css/style.css">
   <!-- Klasa "js" na <html> zanim cokolwiek się narysuje: animacje wejścia (.reveal)
@@ -100,10 +101,12 @@
       <!-- Pokaz slajdów w tle. Pierwszy obraz ładujemy od razu (fetchpriority=high),
            kolejne leniwie — nie spowalniają pierwszego wyświetlenia. -->
       <div class="hero__slides" data-hero-slides aria-hidden="true">
-        <img src="assets/img/hero-brama.webp" alt="" class="is-active" fetchpriority="high">
-        <img data-src="assets/img/hero-balkon.webp" alt="">
-        <img data-src="assets/img/altana.webp" alt="">
-        <img data-src="assets/img/ogrodzenie.webp" alt="">
+        <!-- srcset + sizes = "responsywne obrazki": przeglądarka sama wybiera plik pasujący
+             do szerokości ekranu i gęstości pikseli. Telefon nie ściąga 2400 px bez potrzeby. -->
+        <img src="assets/img/stock/mlot-zar-m.webp" srcset="assets/img/stock/mlot-zar-m.webp 1100w, assets/img/stock/mlot-zar.webp 2400w" sizes="100vw" alt="" class="is-active" fetchpriority="high">
+        <img data-srcset="assets/img/stock/iskry-ogien-m.webp 1100w, assets/img/stock/iskry-ogien.webp 2400w" sizes="100vw" alt="">
+        <img data-srcset="assets/img/stock/kowal-palenisko-m.webp 1100w, assets/img/stock/kowal-palenisko.webp 2400w" sizes="100vw" alt="">
+        <img data-src="assets/img/hero-brama.webp" alt="">
       </div>
       <!-- Iskry z kuźni: rysowane w <canvas> przez JS (tylko dekoracja) -->
       <canvas class="hero__sparks" data-sparks aria-hidden="true"></canvas>
@@ -180,6 +183,16 @@
       </div>
     </section>
 
+    <!-- ===================== MANIFEST (pełnoekranowe zdjęcie) ===================== -->
+    <section class="manifest" aria-label="Ogień, młot, kowadło">
+      <img class="manifest__bg" src="assets/img/stock/iskry-m.webp" srcset="assets/img/stock/iskry-m.webp 1100w, assets/img/stock/iskry.webp 2400w" sizes="100vw" alt="" loading="lazy" data-parallax>
+      <div class="container manifest__inner">
+        <p class="manifest__words reveal"><span>Ogień.</span> <span>Młot.</span> <em>Kowadło.</em></p>
+        <p class="manifest__lead reveal">Z kawałka żelaza o nieokreślonej formie — siłą mięśni, sprawnymi rękami
+          i wyobraźnią — powstają prawdziwe arcydzieła.</p>
+      </div>
+    </section>
+
     <!-- ===================== ATUTY ===================== -->
     <section class="section section--tight features" aria-labelledby="features-title">
       <div class="container">
@@ -218,41 +231,41 @@
           <p class="section-head__lead reveal">Kliknij kategorię, aby zobaczyć nasze realizacje.</p>
         </header>
 
-        <!-- Układ "bento": kafelki różnej wielkości. Każdy to przycisk-filtr galerii (data-filter). -->
+        <!-- Układ "bento": kafelki różnej wielkości. Każdy prowadzi do swojego rzędu w galerii (#row-…). -->
         <div class="bento">
-          <a href="#galeria" class="tile tile--xl reveal" data-filter="bramy">
+          <a href="#row-bramy" class="tile tile--xl reveal" data-filter="bramy">
             <img src="assets/img/hero-brama.webp" alt="" loading="lazy">
             <span class="tile__body"><span class="tile__count" data-count-cat="bramy"></span><span class="tile__title">Bramy wjazdowe</span></span>
           </a>
-          <a href="#galeria" class="tile tile--tall reveal" data-filter="furtki">
+          <a href="#row-furtki" class="tile tile--tall reveal" data-filter="furtki">
             <img src="assets/img/furtka.webp" alt="" loading="lazy">
             <span class="tile__body"><span class="tile__count" data-count-cat="furtki"></span><span class="tile__title">Furtki</span></span>
           </a>
-          <a href="#galeria" class="tile reveal" data-filter="ogrodzenia">
+          <a href="#row-ogrodzenia" class="tile reveal" data-filter="ogrodzenia">
             <img src="assets/img/ogrodzenie.webp" alt="" loading="lazy">
             <span class="tile__body"><span class="tile__count" data-count-cat="ogrodzenia"></span><span class="tile__title">Segmenty ogrodzeniowe</span></span>
           </a>
-          <a href="#galeria" class="tile tile--wide reveal" data-filter="balustrady-zewn">
+          <a href="#row-balustrady-zewn" class="tile tile--wide reveal" data-filter="balustrady-zewn">
             <img src="assets/img/hero-balkon.webp" alt="" loading="lazy">
             <span class="tile__body"><span class="tile__count" data-count-cat="balustrady-zewn"></span><span class="tile__title">Balustrady zewnętrzne</span></span>
           </a>
-          <a href="#galeria" class="tile reveal" data-filter="balustrady-wewn">
+          <a href="#row-balustrady-wewn" class="tile reveal" data-filter="balustrady-wewn">
             <img src="assets/img/schody.webp" alt="" loading="lazy">
             <span class="tile__body"><span class="tile__count" data-count-cat="balustrady-wewn"></span><span class="tile__title">Balustrady wewnętrzne</span></span>
           </a>
-          <a href="#galeria" class="tile reveal" data-filter="wiaty">
+          <a href="#row-wiaty" class="tile reveal" data-filter="wiaty">
             <img src="assets/img/carport.webp" alt="" loading="lazy">
             <span class="tile__body"><span class="tile__count" data-count-cat="wiaty"></span><span class="tile__title">Wiaty i carporty</span></span>
           </a>
-          <a href="#galeria" class="tile reveal" data-filter="metaloplastyka">
+          <a href="#row-metaloplastyka" class="tile reveal" data-filter="metaloplastyka">
             <img src="assets/img/daszek.webp" alt="" loading="lazy">
             <span class="tile__body"><span class="tile__count" data-count-cat="metaloplastyka"></span><span class="tile__title">Metaloplastyka i mała architektura</span></span>
           </a>
-          <a href="#galeria" class="tile reveal" data-filter="bloki">
+          <a href="#row-bloki" class="tile reveal" data-filter="bloki">
             <img src="assets/img/bloki.webp" alt="" loading="lazy">
             <span class="tile__body"><span class="tile__count" data-count-cat="bloki"></span><span class="tile__title">Zlecenia – bloki</span></span>
           </a>
-          <a href="#galeria" class="tile tile--wide reveal" data-filter="rozne">
+          <a href="#row-rozne" class="tile tile--wide reveal" data-filter="rozne">
             <img src="assets/img/altana.webp" alt="" loading="lazy">
             <span class="tile__body"><span class="tile__count" data-count-cat="rozne"></span><span class="tile__title">Różne — altany, meble, lampy</span></span>
           </a>
@@ -270,21 +283,25 @@
         <!-- <ol> bo kolejność kroków ma znaczenie (semantyka) -->
         <ol class="steps" role="list">
           <li class="step reveal">
+            <img class="step__img" src="assets/img/stock/warsztat-m.webp" alt="" loading="lazy" width="1100" height="733">
             <span class="step__no">01</span>
             <h3>Rozmowa i pomiar</h3>
             <p>Dzwonisz lub piszesz — ustalamy potrzeby, styl i budżet. Przyjeżdżamy na pomiar.</p>
           </li>
           <li class="step reveal">
+            <img class="step__img" src="assets/img/stock/zawijas-m.webp" alt="" loading="lazy" width="1100" height="733">
             <span class="step__no">02</span>
             <h3>Projekt</h3>
             <p>Przygotowujemy projekt dopasowany do architektury domu. Każdy pomysł przełożymy na gotowy wyrób.</p>
           </li>
           <li class="step reveal">
+            <img class="step__img" src="assets/img/stock/kucie-kowadlo-m.webp" alt="" loading="lazy" width="1100" height="733">
             <span class="step__no">03</span>
             <h3>Kucie i zabezpieczenie</h3>
             <p>Ręczne kucie w ogniu, potem cynkowanie ogniowe i malowanie proszkowe na lata.</p>
           </li>
           <li class="step reveal">
+            <img class="step__img" src="assets/img/hero-brama.webp" alt="" loading="lazy" width="1039" height="697">
             <span class="step__no">04</span>
             <h3>Transport i montaż</h3>
             <p>Przywozimy i montujemy. Prosimy tylko o jedno — zdjęcie gotowej pracy do naszej galerii!</p>
@@ -319,16 +336,22 @@
           <h2 id="gallery-title" class="h2 reveal">Nasze prace <em>mówią same</em></h2>
         </header>
 
-        <!-- Filtry generuje JS na podstawie assets/data/gallery.js. role="tablist" nie pasuje
-             (to filtry, nie zakładki), więc używamy zwykłych przycisków z aria-pressed. -->
-        <div class="filters" data-filters role="group" aria-label="Filtruj realizacje według kategorii"></div>
+        <p class="section-head__lead reveal">Przesuń palcem w bok, kliknij zdjęcie, aby je powiększyć.</p>
+      </div>
+      <!-- Rzędy kategorii generuje JS z assets/data/gallery.js. Każdy rząd przewija się w BOK
+           (jak na Netflixie), więc na telefonie strona nie ciągnie się przez 468 zdjęć w dół. -->
+      <div class="rows" data-gallery-rows></div>
+    </section>
 
-        <!-- aria-live: czytnik ekranu ogłosi np. "Bramy wjazdowe: 88 zdjęć" po zmianie filtra -->
-        <p class="gallery__status" data-gallery-status aria-live="polite"></p>
-        <ul class="masonry" data-gallery role="list"></ul>
-
-        <div class="gallery__more">
-          <button class="btn btn--ghost" data-gallery-more>Pokaż więcej</button>
+    <!-- ===================== CTA ===================== -->
+    <section class="cta" aria-label="Zamów projekt">
+      <img class="cta__bg" src="assets/img/stock/palenisko-m.webp" srcset="assets/img/stock/palenisko-m.webp 1100w, assets/img/stock/palenisko.webp 2400w" sizes="100vw" alt="" loading="lazy" data-parallax>
+      <div class="container cta__inner">
+        <h2 class="h2 reveal">Masz pomysł? <em>Wykujemy go.</em></h2>
+        <p class="reveal">Bezpłatna wycena i doradztwo — zadzwoń, porozmawiajmy o Twoim projekcie.</p>
+        <div class="hero__actions reveal">
+          <a href="tel:+48695695813" class="btn btn--ember">Zadzwoń: 695 695 813</a>
+          <a href="#kontakt" class="btn btn--ghost">Dane kontaktowe</a>
         </div>
       </div>
     </section>

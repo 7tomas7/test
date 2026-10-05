@@ -68,6 +68,7 @@ function initHeroSlides() {
   // Leniwe ładowanie: pozostałe slajdy pobieramy dopiero po załadowaniu strony,
   // żeby nie konkurowały o łącze z pierwszym zdjęciem i fontami.
   window.addEventListener("load", () => slides.forEach((img) => {
+    if (img.dataset.srcset) img.srcset = img.dataset.srcset; // wersja responsywna (kilka rozmiarów)
     if (img.dataset.src) img.src = img.dataset.src;
   }));
 
@@ -186,113 +187,124 @@ function initCounters() {
   els.forEach((el) => io.observe(el));
 }
 
-/* ---------- Galeria + filtry + lightbox ---------- */
+/* ---------- Paralaksa: tło przesuwa się wolniej niż strona ----------
+   Efekt "głębi" na pełnoekranowych zdjęciach (sekcja Ogień/Młot/Kowadło i baner CTA).
+   Liczymy przesunięcie tylko dla zdjęć widocznych na ekranie i tylko raz na klatkę
+   (requestAnimationFrame) — przewijanie zostaje płynne także na słabszym telefonie. */
+function initParallax() {
+  const imgs = $$("[data-parallax]");
+  if (!imgs.length || reducedMotion) return;
+  const visible = new Set();
+  const io = new IntersectionObserver((entries) => entries.forEach((e) => {
+    e.isIntersecting ? visible.add(e.target) : visible.delete(e.target);
+  }));
+  imgs.forEach((img) => io.observe(img.parentElement));
+  let ticking = false;
+  const update = () => {
+    ticking = false;
+    visible.forEach((section) => {
+      const r = section.getBoundingClientRect();
+      // p: -1 (sekcja pod ekranem) .. 0 (środek) .. 1 (nad ekranem)
+      const p = (window.innerHeight / 2 - (r.top + r.height / 2)) / (window.innerHeight / 2 + r.height / 2);
+      $("[data-parallax]", section).style.transform = `translate3d(0, ${p * 12}%, 0) scale(1.25)`;
+    });
+  };
+  window.addEventListener("scroll", () => {
+    if (!ticking) { ticking = true; requestAnimationFrame(update); }
+  }, { passive: true });
+  update();
+}
+
+/* ---------- Galeria: rzędy kategorii + lightbox ----------
+   Zamiast jednej ogromnej siatki (468 zdjęć = kilometr przewijania na telefonie)
+   każda kategoria to poziomy rząd, przesuwany palcem w bok. Strona w pionie jest
+   krótka, a i tak można obejrzeć wszystko. Zdjęcia ładują się leniwie (loading="lazy")
+   dopiero, gdy rząd zostanie przesunięty blisko nich. */
 function initGallery() {
   const data = window.GALLERY;
-  const list = $("[data-gallery]");
-  if (!data || !list) return;
+  const rowsEl = $("[data-gallery-rows]");
+  if (!data || !rowsEl) return;
 
   const BASE = "assets/img/gallery/";
-  const PAGE = 24; // ile zdjęć dokładamy na raz — 468 naraz to za dużo dla telefonu
-  const labels = Object.fromEntries(data.categories.map((c) => [c.slug, c.label]));
-  const countBy = data.items.reduce((acc, it) => ((acc[it.c] = (acc[it.c] || 0) + 1), acc), {});
-
-  const filtersEl = $("[data-filters]");
-  const moreBtn = $("[data-gallery-more]");
-  const status = $("[data-gallery-status]");
-  let current = "all";
-  let filtered = [];
-  let shown = 0;
+  const byCat = Object.fromEntries(data.categories.map((c) => [c.slug, data.items.filter((it) => it.c === c.slug)]));
 
   // Liczba zdjęć na kafelkach oferty
   $$("[data-count-cat]").forEach((el) => {
-    const n = countBy[el.dataset.countCat] || 0;
-    el.textContent = `${n} realizacji`;
+    el.textContent = `${(byCat[el.dataset.countCat] || []).length} realizacji`;
   });
 
-  // Przyciski filtrów (generowane z danych — nowa kategoria pojawi się sama)
-  const chips = [{ slug: "all", label: "Wszystkie" }, ...data.categories].map((c) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "chip";
-    b.dataset.slug = c.slug;
-    b.setAttribute("aria-pressed", String(c.slug === "all"));
-    const n = c.slug === "all" ? data.items.length : countBy[c.slug];
-    b.innerHTML = `${c.label}<sup>${n}</sup>`;
-    b.addEventListener("click", () => setFilter(c.slug));
-    filtersEl.append(b);
-    return b;
-  });
-
-  function renderMore() {
-    const frag = document.createDocumentFragment(); // jedna operacja na DOM zamiast 24 = szybciej
-    filtered.slice(shown, shown + PAGE).forEach((it, k) => {
-      const idx = shown + k;
+  data.categories.forEach((cat) => {
+    const items = byCat[cat.slug];
+    const row = document.createElement("section");
+    row.className = "row reveal";
+    row.id = `row-${cat.slug}`;
+    row.setAttribute("aria-label", cat.label);
+    row.innerHTML = `
+      <div class="container row__head">
+        <h3>${cat.label} <span class="row__count">${items.length}</span></h3>
+        <div class="row__nav">
+          <button type="button" class="row__btn" data-dir="-1" aria-label="Przewiń w lewo: ${cat.label}">‹</button>
+          <button type="button" class="row__btn" data-dir="1" aria-label="Przewiń w prawo: ${cat.label}">›</button>
+        </div>
+      </div>
+      <ul class="row__track" role="list"></ul>`;
+    const track = $(".row__track", row);
+    const frag = document.createDocumentFragment(); // jedna operacja na DOM zamiast setek = szybciej
+    items.forEach((it, i) => {
       const li = document.createElement("li");
-      li.style.animationDelay = `${(k % PAGE) * 30}ms`;
       li.innerHTML = `
-        <button type="button" aria-label="Powiększ: ${labels[it.c]}, zdjęcie ${idx + 1}">
-          <img src="${BASE}thumb/${it.f}" width="${it.w}" height="${it.h}" alt="${labels[it.c]} — realizacja Kowalstwa Artystycznego Marek Mida" loading="lazy" decoding="async">
+        <button type="button" aria-label="Powiększ: ${cat.label}, zdjęcie ${i + 1} z ${items.length}">
+          <img src="${BASE}thumb/${it.f}" width="${it.w}" height="${it.h}" alt="${cat.label} — realizacja Kowalstwa Artystycznego Marek Mida" loading="lazy" decoding="async">
         </button>`;
       const img = $("img", li);
       // Płynne pojawienie się po załadowaniu (zamiast "wyskakiwania" obrazka)
       if (img.complete) img.classList.add("is-loaded");
       else img.addEventListener("load", () => img.classList.add("is-loaded"), { once: true });
-      $("button", li).addEventListener("click", () => openLightbox(idx));
+      $("button", li).addEventListener("click", () => openLightbox(items, i));
       frag.append(li);
     });
-    list.append(frag);
-    shown = Math.min(shown + PAGE, filtered.length);
-    moreBtn.parentElement.hidden = shown >= filtered.length;
-    moreBtn.textContent = `Pokaż więcej (${filtered.length - shown})`;
-  }
+    track.append(frag);
 
-  // "Wszystkie" = przeplatamy kategorie (brama, ogrodzenie, balustrada, furtka, …),
-  // żeby pierwszy ekran galerii pokazywał przekrój oferty, a nie 88 bram z rzędu.
-  const byCat = data.categories.map((c) => data.items.filter((it) => it.c === c.slug));
-  const mixed = [];
-  for (let i = 0; mixed.length < data.items.length; i++) byCat.forEach((arr) => arr[i] && mixed.push(arr[i]));
+    // Strzałki (desktop): przewiń o ~80% szerokości rzędu
+    $$(".row__btn", row).forEach((b) => b.addEventListener("click", () => {
+      track.scrollBy({ left: +b.dataset.dir * track.clientWidth * 0.8, behavior: reducedMotion ? "auto" : "smooth" });
+    }));
+    // Wyszarz strzałkę, gdy jesteśmy na początku / końcu rzędu
+    const updateBtns = () => {
+      const [prev, next] = $$(".row__btn", row);
+      prev.disabled = track.scrollLeft < 8;
+      next.disabled = track.scrollLeft + track.clientWidth > track.scrollWidth - 8;
+    };
+    track.addEventListener("scroll", updateBtns, { passive: true });
+    rowsEl.append(row);
+    requestAnimationFrame(updateBtns);
+  });
 
-  function setFilter(slug) {
-    current = slug;
-    chips.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.slug === slug)));
-    filtered = slug === "all" ? mixed : data.items.filter((it) => it.c === slug);
-    shown = 0;
-    list.innerHTML = "";
-    status.textContent = `${slug === "all" ? "Wszystkie realizacje" : labels[slug]}: ${filtered.length} zdjęć`;
-    renderMore();
-  }
+  // Rzędy dodaliśmy po starcie — trzeba je jeszcze "podpiąć" pod animacje wejścia
+  const io = new IntersectionObserver((entries) => entries.forEach((e) => {
+    if (e.isIntersecting) { e.target.classList.add("is-in"); io.unobserve(e.target); }
+  }), { threshold: 0.1 });
+  $$(".row", rowsEl).forEach((r) => io.observe(r));
 
-  moreBtn.addEventListener("click", renderMore);
-
-  // Automatyczne doładowanie, gdy przycisk "Pokaż więcej" zbliża się do ekranu (infinite scroll),
-  // ale dopiero po pierwszym ręcznym kliknięciu — żeby stopka/kontakt były osiągalne.
-  let auto = false;
-  moreBtn.addEventListener("click", () => (auto = true), { once: true });
-  new IntersectionObserver(([e]) => { if (e.isIntersecting && auto && shown < filtered.length) renderMore(); },
-    { rootMargin: "600px 0px" }).observe(moreBtn);
-
-  // Kafelki w ofercie ustawiają filtr galerii
-  $$("[data-filter]").forEach((a) => a.addEventListener("click", () => setFilter(a.dataset.filter)));
-
-  /* ---- Lightbox ---- */
+  /* ---- Lightbox (podgląd na pełnym ekranie) ---- */
   const dlg = $("[data-lightbox]");
   const img = $("[data-lightbox-img]");
   const cap = $("[data-lightbox-caption]");
+  const labels = Object.fromEntries(data.categories.map((c) => [c.slug, c.label]));
+  let list = [];
   let pos = 0;
 
   function show(i) {
-    pos = (i + filtered.length) % filtered.length; // zawijanie: po ostatnim -> pierwsze
-    const it = filtered[pos];
+    pos = (i + list.length) % list.length; // zawijanie: po ostatnim -> pierwsze
+    const it = list[pos];
     img.src = `${BASE}full/${it.f}`;
     img.width = it.fw; img.height = it.fh;
     img.alt = `${labels[it.c]} — zdjęcie ${pos + 1}`;
-    cap.textContent = `${labels[it.c]} · ${pos + 1} / ${filtered.length}`;
+    cap.textContent = `${labels[it.c]} · ${pos + 1} / ${list.length}`;
     // Wstępnie pobierz następne zdjęcie, żeby "dalej" działało natychmiast
-    const next = filtered[(pos + 1) % filtered.length];
-    new Image().src = `${BASE}full/${next.f}`;
+    new Image().src = `${BASE}full/${list[(pos + 1) % list.length].f}`;
   }
-  function openLightbox(i) { show(i); dlg.showModal(); }
+  function openLightbox(items, i) { list = items; show(i); dlg.showModal(); }
 
   $("[data-lightbox-prev]").addEventListener("click", () => show(pos - 1));
   $("[data-lightbox-next]").addEventListener("click", () => show(pos + 1));
@@ -313,8 +325,6 @@ function initGallery() {
     if (Math.abs(dx) > 50) show(pos + (dx < 0 ? 1 : -1));
     x0 = null;
   });
-
-  setFilter(current);
 }
 
 /* ---------- Start ---------- */
@@ -326,3 +336,4 @@ initSparks();
 initReveal();
 initCounters();
 initGallery();
+initParallax();

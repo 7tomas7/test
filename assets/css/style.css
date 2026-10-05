@@ -371,7 +371,9 @@ h3 { font-family: var(--ff-display); font-size: var(--fs-h3); font-weight: 600; 
 /* ---------- Proces ---------- */
 .process { background: var(--c-bg-2); border-block: 1px solid var(--c-line); }
 .steps { display: grid; gap: 1.2rem; counter-reset: step; }
-.step { position: relative; padding: 1.8rem 1.6rem; border: 1px solid var(--c-line); border-radius: var(--radius); background: var(--c-bg); }
+.step { position: relative; padding: 0 1.6rem 1.8rem; border: 1px solid var(--c-line); border-radius: var(--radius); background: var(--c-bg); overflow: hidden; }
+.step__img { width: calc(100% + 3.2rem); max-width: none; margin: 0 -1.6rem 1.2rem; aspect-ratio: 16 / 10; object-fit: cover; filter: saturate(.9); transition: transform .9s var(--ease-out); }
+.step:hover .step__img { transform: scale(1.05); }
 .step__no { font-family: var(--ff-display); font-size: 3.4rem; line-height: 1; font-weight: 600; display: block; margin-bottom: .6rem;
   background: var(--grad-ember); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .step h3 { margin-bottom: .4rem; }
@@ -380,7 +382,7 @@ h3 { font-family: var(--ff-display); font-size: var(--fs-h3); font-weight: 600; 
 @media (min-width: 1024px) {
   .steps { grid-template-columns: repeat(4, 1fr); }
   /* Linia łącząca kroki na desktopie */
-  .step:not(:last-child)::after { content: ""; position: absolute; top: 3.2rem; right: -1.2rem; width: 1.2rem; height: 1px; background: var(--c-ember); }
+  .step:not(:last-child)::after { content: none; position: absolute; top: 3.2rem; right: -1.2rem; width: 1.2rem; height: 1px; background: var(--c-ember); }
 }
 
 /* ---------- Film ---------- */
@@ -391,52 +393,100 @@ h3 { font-family: var(--ff-display); font-size: var(--fs-h3); font-weight: 600; 
 }
 .film__frame video { width: 100%; height: auto; aspect-ratio: 16 / 9; }
 
-/* ---------- Galeria ---------- */
-.filters {
-  display: flex; gap: .5rem; margin-bottom: 1rem;
-  /* Telefon: filtry przewijają się poziomo palcem zamiast zawijać na 4 linie */
-  overflow-x: auto; scroll-snap-type: x proximity; padding-bottom: .6rem;
-  scrollbar-width: none; margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter);
+/* ---------- Galeria: poziome rzędy ----------
+   scroll-snap: po puszczeniu palca rząd "dociąga" do najbliższego zdjęcia —
+   przesuwanie jest jak w natywnej aplikacji (Netflix, App Store). */
+/* minmax(0, 1fr) — WAŻNE: domyślnie kolumna siatki ma min. szerokość = szerokość treści,
+   więc rząd z setką zdjęć rozpychałby całą stronę na 30 000 px. Zero pozwala jej się zwęzić,
+   a nadmiar przewija się wewnątrz rzędu (overflow-x: auto). */
+.rows { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(2rem, 4vw, 3rem); margin-top: clamp(1.5rem, 3vw, 2.5rem); }
+.row__head { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: .9rem; }
+.row__head h3 { font-size: clamp(1.4rem, 1.1rem + 1.2vw, 2.1rem); font-weight: 500; }
+.row__count {
+  font-family: var(--ff-body); font-size: .72rem; font-weight: 700; letter-spacing: .08em;
+  color: var(--c-ember-2); border: 1px solid rgb(246 177 90 / .4); border-radius: 999px;
+  padding: .15rem .55rem; vertical-align: middle; margin-left: .3rem;
 }
-.filters::-webkit-scrollbar { display: none; }
-.chip {
-  flex: none; scroll-snap-align: start;
-  padding: .6rem 1.1rem; border-radius: 999px; border: 1px solid var(--c-line);
-  font-size: .86rem; font-weight: 600; white-space: nowrap; min-height: 42px;
-  transition: background-color .3s, border-color .3s, color .3s;
+.row__nav { display: none; gap: .5rem; }
+.row__btn {
+  width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--c-line);
+  font-size: 1.5rem; line-height: 1; display: grid; place-items: center;
+  transition: background-color .25s, color .25s, opacity .25s;
 }
-.chip sup { color: var(--c-muted); font-size: .7em; margin-left: .25rem; }
-.chip:hover { border-color: var(--c-ember); }
-.chip[aria-pressed="true"] { background: var(--c-text); color: var(--c-bg); border-color: var(--c-text); }
-.chip[aria-pressed="true"] sup { color: var(--c-bg); }
-@media (min-width: 900px) { .filters { flex-wrap: wrap; overflow: visible; margin-inline: 0; padding-inline: 0; } }
+.row__btn:hover:not(:disabled) { background: var(--c-ember); color: #1b0f07; border-color: var(--c-ember); }
+.row__btn:disabled { opacity: .3; cursor: default; }
+@media (min-width: 900px) { .row__nav { display: flex; } }
 
-.gallery__status { color: var(--c-muted); font-size: .85rem; margin-bottom: 1.2rem; }
-
-/* Masonry przez CSS columns: zdjęcia poziome i pionowe układają się jak cegły, bez JS */
-.masonry { columns: 2 160px; column-gap: .7rem; }
-.masonry li { break-inside: avoid; margin-bottom: .7rem; }
-@media (min-width: 768px) { .masonry { columns: 3 220px; column-gap: 1rem; } .masonry li { margin-bottom: 1rem; } }
-@media (min-width: 1200px) { .masonry { columns: 4 240px; } }
-.masonry button {
-  display: block; width: 100%; padding: 0; position: relative; overflow: hidden;
-  border-radius: 10px; background: var(--c-surface);
+.row__track {
+  display: flex; gap: .7rem;
+  overflow-x: auto; overscroll-behavior-x: contain; /* przesunięcie rzędu nie "cofa" strony w przeglądarce */
+  scroll-snap-type: x mandatory;
+  /* Wcięcie zgodne z kontenerem strony: pierwsze zdjęcie równo z tytułem,
+     a ostatnie może dojechać do krawędzi ekranu */
+  padding-inline: max(var(--gutter), (100% - var(--container)) / 2);
+  scroll-padding-inline: max(var(--gutter), (100% - var(--container)) / 2);
+  padding-bottom: .4rem;
+  scrollbar-width: none;
 }
-.masonry img { width: 100%; transition: transform .8s var(--ease-out), opacity .6s; opacity: 0; }
-.masonry img.is-loaded { opacity: 1; }
-.masonry button:hover img { transform: scale(1.05); }
-.masonry button::after {
-  content: "+"; position: absolute; right: .7rem; bottom: .7rem; width: 36px; height: 36px;
+.row__track::-webkit-scrollbar { display: none; }
+.row__track li { flex: none; scroll-snap-align: start; }
+.row__track button {
+  display: block; position: relative; overflow: hidden; border-radius: 12px; background: var(--c-surface);
+  height: clamp(210px, 52vw, 300px); /* stała wysokość rzędu, szerokość wynika z proporcji zdjęcia */
+}
+.row__track img { height: 100%; width: auto; max-width: none; transition: transform .8s var(--ease-out), opacity .6s; opacity: 0; }
+.row__track img.is-loaded { opacity: 1; }
+.row__track button:hover img { transform: scale(1.05); }
+.row__track button::after {
+  content: "+"; position: absolute; right: .6rem; bottom: .6rem; width: 34px; height: 34px;
   display: grid; place-items: center; border-radius: 50%;
-  background: var(--c-ember); color: #1b0f07; font-size: 1.3rem; font-weight: 700;
+  background: var(--c-ember); color: #1b0f07; font-size: 1.2rem; font-weight: 700;
   opacity: 0; transform: scale(.6); transition: .35s var(--ease-out);
 }
-.masonry button:hover::after, .masonry button:focus-visible::after { opacity: 1; transform: none; }
-/* Wejście nowo dodanych zdjęć */
-.masonry li { animation: pop-in .7s var(--ease-out) both; }
-@keyframes pop-in { from { opacity: 0; transform: translateY(24px); } }
-.gallery__more { text-align: center; margin-top: 2rem; }
-.gallery__more[hidden] { display: none; }
+.row__track button:hover::after, .row__track button:focus-visible::after { opacity: 1; transform: none; }
+
+/* ---------- Pełnoekranowe sekcje ze zdjęciem (manifest, CTA) ---------- */
+.manifest, .cta {
+  position: relative; overflow: hidden; isolation: isolate;
+  min-height: clamp(460px, 80svh, 760px);
+  display: grid; align-items: center;
+  padding-block: var(--space-section);
+}
+.manifest__bg, .cta__bg {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2;
+  transform: scale(1.25); will-change: transform; /* zapas na paralaksę — krawędzie się nie odsłonią */
+}
+.manifest::after, .cta::after {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background:
+    linear-gradient(180deg, var(--c-bg) 0%, rgb(20 17 15 / .5) 22%, rgb(20 17 15 / .5) 78%, var(--c-bg) 100%),
+    /* ciemna "plama" dokładnie pod tekstem — płomienie zostają widoczne dookoła,
+       a napis ma kontrast (dostępność: min. 4.5:1 dla zwykłego tekstu, WCAG AA) */
+    radial-gradient(ellipse 60% 45% at 50% 50%, rgb(20 17 15 / .7), transparent 75%);
+}
+.cta::after {
+  background:
+    linear-gradient(180deg, var(--c-bg) 0%, rgb(20 17 15 / .45) 22%, rgb(20 17 15 / .45) 78%, var(--c-bg) 100%),
+    linear-gradient(90deg, rgb(20 17 15 / .85) 0%, rgb(20 17 15 / .55) 50%, transparent 85%);
+}
+/* Słowa z gradientem: text-shadow nie działa przy przezroczystym wypełnieniu,
+   więc cień robimy filtrem drop-shadow (rysuje cień pod kształtem liter) */
+.manifest__words em, .cta .h2 em { filter: drop-shadow(0 2px 14px rgb(0 0 0 / .9)); }
+.manifest__inner { text-align: center; }
+.manifest__words {
+  font-family: var(--ff-display); font-weight: 500; line-height: 1;
+  font-size: clamp(3rem, 1.5rem + 8vw, 8.5rem); letter-spacing: -0.01em;
+  text-shadow: 0 6px 50px rgb(0 0 0 / .6);
+}
+.manifest__words span { display: inline-block; }
+.manifest__words em {
+  font-style: italic; background: var(--grad-ember);
+  -webkit-background-clip: text; background-clip: text; color: transparent; padding-right: .06em;
+}
+.manifest__lead { max-width: 38rem; margin: 1.6rem auto 0; font-size: var(--fs-lead); color: #e9dfd0; text-shadow: 0 2px 20px rgb(0 0 0 / .7); }
+.cta__inner { max-width: 760px; }
+.cta__inner > p { font-size: var(--fs-lead); color: #e9dfd0; margin-bottom: 2rem; text-shadow: 0 2px 20px rgb(0 0 0 / .7); }
+.cta .h2 { text-shadow: 0 4px 40px rgb(0 0 0 / .6); }
 
 /* ---------- Lightbox ---------- */
 .lightbox {
