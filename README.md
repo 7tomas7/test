@@ -17,6 +17,7 @@ assets/fonts/              fonty hostowane lokalnie (RODO, szybkość)
 assets/video/              film promo 16:9 + 9:16 (Reels/TikTok) + plakaty
 scripts/optimize_images.py zdjęcia ze starej strony -> WebP + gallery.js
 scripts/make_video.py      generator filmu reklamowego (obraz)
+scripts/build.py           generator podstron i plików SEO + paczka dist/
 scripts/add_music.py       podkłada muzykę (MP3) pod film, sam dobiera fragment
 scripts/make_soundtrack.py stary syntezator dźwięku (nieużywany)
 old/                       kopia starej strony (źródło zdjęć) — NIE wgrywać na serwer
@@ -43,9 +44,19 @@ python3 scripts/make_video.py wide       # tylko 16:9
 ```
 Scenariusz (kolejność zdjęć, napisy, czasy) = lista `SCENES` na górze skryptu.
 
-## Wdrożenie
+## Budowanie i wdrożenie
 
-Wgraj na serwer wszystko **oprócz** `old/` i `scripts/`.
+```bash
+python3 scripts/build.py           # generuje podstrony, sitemap, robots, .htaccess i paczkę dist/
+./scripts/deploy-preview.sh        # podgląd na GitHub Pages (z noindex)
+```
+Na serwer firmy (FTP) wgrywasz **zawartość folderu `dist/`** zbudowanego BEZ `--preview`
+(razem z ukrytym plikiem `.htaccess`!). Teksty podstron i FAQ edytujesz w `scripts/build.py`.
+
+### Po starcie na kowalstwoartystyczne.com
+1. Google Search Console: dodaj domenę, zgłoś `https://www.kowalstwoartystyczne.com/sitemap.xml`.
+2. Profil Firmy w Google (Google Maps): wpisz adres strony, dodaj zdjęcia, poproś klientów o opinie.
+3. Sprawdź przekierowania: `curl -I https://www.kowalstwoartystyczne.com/offer.html` → 301.
 
 ## Do zrobienia przed startem
 

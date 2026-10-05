@@ -50,7 +50,10 @@ function initNav() {
 
   // Podświetlanie aktywnej sekcji w menu ("scroll spy")
   const links = $$(".site-nav__list a");
-  const sections = links.map((a) => $(a.getAttribute("href"))).filter(Boolean);
+  // Tylko linki do sekcji na TEJ stronie ("#oferta"). Na podstronach linki wyglądają jak
+  // "./#oferta" — to nie jest poprawny selektor CSS i querySelector rzuciłby błąd.
+  const sections = links.map((a) => a.getAttribute("href"))
+    .filter((h) => /^#[\w-]+$/.test(h)).map((h) => $(h)).filter(Boolean);
   const spy = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
@@ -215,12 +218,73 @@ function initParallax() {
   update();
 }
 
-/* ---------- Galeria: rzędy kategorii + lightbox ----------
+/* ---------- Lightbox (podgląd zdjęcia na pełnym ekranie) ----------
+   Osobna funkcja, bo używa jej i strona główna (rzędy), i podstrony kategorii (siatka).
+   Zwraca funkcję openLightbox(listaZdjęć, numer) — kto ją dostanie, może otworzyć podgląd. */
+function initLightbox() {
+  const dlg = $("[data-lightbox]");
+  if (!dlg) return () => {};
+  const BASE = "assets/img/gallery/";
+  const img = $("[data-lightbox-img]");
+  const cap = $("[data-lightbox-caption]");
+  const labels = Object.fromEntries((window.GALLERY?.categories || []).map((c) => [c.slug, c.label]));
+  let list = [];
+  let pos = 0;
+
+  function show(i) {
+    pos = (i + list.length) % list.length; // zawijanie: po ostatnim -> pierwsze
+    const it = list[pos];
+    img.src = `${BASE}full/${it.f}`;
+    img.width = it.fw; img.height = it.fh;
+    img.alt = `${labels[it.c]} — zdjęcie ${pos + 1}`;
+    cap.textContent = `${labels[it.c]} · ${pos + 1} / ${list.length}`;
+    // Wstępnie pobierz następne zdjęcie, żeby "dalej" działało natychmiast
+    new Image().src = `${BASE}full/${list[(pos + 1) % list.length].f}`;
+  }
+
+  $("[data-lightbox-prev]").addEventListener("click", () => show(pos - 1));
+  $("[data-lightbox-next]").addEventListener("click", () => show(pos + 1));
+  $("[data-lightbox-close]").addEventListener("click", () => dlg.close());
+  // Klik w ciemne tło (poza zdjęciem i przyciskami) zamyka podgląd
+  dlg.addEventListener("click", (e) => { if (e.target === dlg || e.target.classList.contains("lightbox__figure")) dlg.close(); });
+  dlg.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") show(pos - 1);
+    if (e.key === "ArrowRight") show(pos + 1);
+  });
+
+  // Gesty przesuwania palcem na telefonie
+  let x0 = null;
+  dlg.addEventListener("touchstart", (e) => (x0 = e.touches[0].clientX), { passive: true });
+  dlg.addEventListener("touchend", (e) => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 50) show(pos + (dx < 0 ? 1 : -1));
+    x0 = null;
+  });
+
+  return (items, i) => { list = items; show(i); dlg.showModal(); };
+}
+
+/* ---------- Podstrona kategorii: siatka zdjęć ----------
+   Zdjęcia są już w HTML (wygenerowane przez scripts/build.py — dobre dla SEO,
+   bo Google widzi je bez uruchamiania JS). Tutaj tylko podpinamy kliknięcia. */
+function initCategoryGrid(openLightbox) {
+  const grid = $("[data-category-grid]");
+  if (!grid || !window.GALLERY) return;
+  const items = window.GALLERY.items.filter((it) => it.c === grid.dataset.categoryGrid);
+  $$("button", grid).forEach((b, i) => b.addEventListener("click", () => openLightbox(items, i)));
+  $$("img", grid).forEach((img) => {
+    if (img.complete) img.classList.add("is-loaded");
+    else img.addEventListener("load", () => img.classList.add("is-loaded"), { once: true });
+  });
+}
+
+/* ---------- Galeria: rzędy kategorii ----------
    Zamiast jednej ogromnej siatki (468 zdjęć = kilometr przewijania na telefonie)
    każda kategoria to poziomy rząd, przesuwany palcem w bok. Strona w pionie jest
    krótka, a i tak można obejrzeć wszystko. Zdjęcia ładują się leniwie (loading="lazy")
    dopiero, gdy rząd zostanie przesunięty blisko nich. */
-function initGallery() {
+function initGallery(openLightbox) {
   const data = window.GALLERY;
   const rowsEl = $("[data-gallery-rows]");
   if (!data || !rowsEl) return;
@@ -239,9 +303,12 @@ function initGallery() {
     row.className = "row reveal";
     row.id = `row-${cat.slug}`;
     row.setAttribute("aria-label", cat.label);
+    // Adres podstrony kategorii bierzemy z kafelka w ofercie — jedno źródło prawdy, bez kopiowania listy
+    const page = $(`[data-filter="${cat.slug}"]`)?.getAttribute("href");
     row.innerHTML = `
       <div class="container row__head">
         <h3>${cat.label} <span class="row__count">${items.length}</span></h3>
+        ${page ? `<a class="row__all" href="${page}">Cała kategoria →</a>` : ""}
         <div class="row__nav">
           <button type="button" class="row__btn" data-dir="-1" aria-label="Przewiń w lewo: ${cat.label}">‹</button>
           <button type="button" class="row__btn" data-dir="1" aria-label="Przewiń w prawo: ${cat.label}">›</button>
@@ -285,55 +352,17 @@ function initGallery() {
     if (e.isIntersecting) { e.target.classList.add("is-in"); io.unobserve(e.target); }
   }), { threshold: 0.1 });
   $$(".row", rowsEl).forEach((r) => io.observe(r));
-
-  /* ---- Lightbox (podgląd na pełnym ekranie) ---- */
-  const dlg = $("[data-lightbox]");
-  const img = $("[data-lightbox-img]");
-  const cap = $("[data-lightbox-caption]");
-  const labels = Object.fromEntries(data.categories.map((c) => [c.slug, c.label]));
-  let list = [];
-  let pos = 0;
-
-  function show(i) {
-    pos = (i + list.length) % list.length; // zawijanie: po ostatnim -> pierwsze
-    const it = list[pos];
-    img.src = `${BASE}full/${it.f}`;
-    img.width = it.fw; img.height = it.fh;
-    img.alt = `${labels[it.c]} — zdjęcie ${pos + 1}`;
-    cap.textContent = `${labels[it.c]} · ${pos + 1} / ${list.length}`;
-    // Wstępnie pobierz następne zdjęcie, żeby "dalej" działało natychmiast
-    new Image().src = `${BASE}full/${list[(pos + 1) % list.length].f}`;
-  }
-  function openLightbox(items, i) { list = items; show(i); dlg.showModal(); }
-
-  $("[data-lightbox-prev]").addEventListener("click", () => show(pos - 1));
-  $("[data-lightbox-next]").addEventListener("click", () => show(pos + 1));
-  $("[data-lightbox-close]").addEventListener("click", () => dlg.close());
-  // Klik w ciemne tło (poza zdjęciem i przyciskami) zamyka podgląd
-  dlg.addEventListener("click", (e) => { if (e.target === dlg || e.target.classList.contains("lightbox__figure")) dlg.close(); });
-  dlg.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowLeft") show(pos - 1);
-    if (e.key === "ArrowRight") show(pos + 1);
-  });
-
-  // Gesty przesuwania palcem na telefonie
-  let x0 = null;
-  dlg.addEventListener("touchstart", (e) => (x0 = e.touches[0].clientX), { passive: true });
-  dlg.addEventListener("touchend", (e) => {
-    if (x0 === null) return;
-    const dx = e.changedTouches[0].clientX - x0;
-    if (Math.abs(dx) > 50) show(pos + (dx < 0 ? 1 : -1));
-    x0 = null;
-  });
 }
 
 /* ---------- Start ---------- */
-$("[data-year]").textContent = new Date().getFullYear();
+$$("[data-year]").forEach((el) => (el.textContent = new Date().getFullYear()));
 initHeader();
 initNav();
 initHeroSlides();
 initSparks();
 initReveal();
 initCounters();
-initGallery();
+const openLightbox = initLightbox();
+initGallery(openLightbox);
+initCategoryGrid(openLightbox);
 initParallax();

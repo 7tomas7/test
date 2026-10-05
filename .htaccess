@@ -1,0 +1,60 @@
+# ==========================================================================
+# Konfiguracja serwera Apache (plik musi się nazywać dokładnie ".htaccess")
+# ==========================================================================
+
+RewriteEngine On
+
+# 1) Jeden adres strony: https + www. Bez tego Google widzi 4 kopie strony
+#    (http/https x z www/bez www) i dzieli między nie pozycję.
+RewriteCond %{HTTPS} off [OR]
+RewriteCond %{HTTP_HOST} !^www\. [NC]
+RewriteRule ^(.*)$ https://www.kowalstwoartystyczne.com/$1 [L,R=301]
+
+# 2) /index.html -> / (żeby strona główna nie miała dwóch adresów)
+RewriteCond %{THE_REQUEST} \s/index\.html [NC]
+RewriteRule ^index\.html$ / [L,R=301]
+
+# 3) Stare adresy -> nowe. 301 = "przeniesione na stałe": Google przenosi pozycję
+#    starej podstrony na nową, a linki z innych stron dalej działają.
+Redirect 301 /offer.html /#oferta
+Redirect 301 /about.html /#o-nas
+Redirect 301 /contact.html /#kontakt
+Redirect 301 /bramy-wjazdowe-2.html /bramy-wjazdowe.html
+Redirect 301 /bramy-wjazdowe-3.html /bramy-wjazdowe.html
+Redirect 301 /segmenty-ogrodzeniowe-2.html /segmenty-ogrodzeniowe.html
+Redirect 301 /segmenty-ogrodzeniowe-3.html /segmenty-ogrodzeniowe.html
+Redirect 301 /balustrady-zewnetrzne-2.html /balustrady-zewnetrzne.html
+Redirect 301 /balustrady-zewnetrzne-3.html /balustrady-zewnetrzne.html
+Redirect 301 /others.html /rozne.html
+
+# 4) Własna strona błędu
+ErrorDocument 404 /404.html
+
+# 5) Kompresja tekstu (HTML/CSS/JS) — pliki lecą do przeglądarki nawet 70% mniejsze
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript text/javascript application/json image/svg+xml application/xml text/xml
+</IfModule>
+
+# 6) Cache w przeglądarce: zdjęcia, fonty i film rzadko się zmieniają -> rok;
+#    HTML krótko, żeby zmiany na stronie były widoczne od razu.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType video/mp4 "access plus 1 year"
+  ExpiresByType text/css "access plus 1 week"
+  ExpiresByType application/javascript "access plus 1 week"
+  ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
+# 7) Podstawowe nagłówki bezpieczeństwa
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+</IfModule>
+
+# Nie pokazuj listy plików w katalogach
+Options -Indexes
